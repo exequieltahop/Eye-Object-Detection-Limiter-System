@@ -8,7 +8,7 @@
         <hr>
 
         <!-- username -->
-        <input type="email" name="email" id="email" placeholder="Username" class="form-control mb-3" autocomplete="email" required>
+        <input type="text" name="username" id="username" placeholder="Username" class="form-control mb-3" autocomplete="name" required>
         
         <!-- password -->
         <input type="password" name="password" id="password" class="form-control mb-3" placeholder="Password" autocomplete="current-password" minlength="8" required>
@@ -44,34 +44,43 @@
                 e.preventDefault();
 
                 const formData = new FormData(e.target);
-                const url = './controller/auth/sign-in.php';
+                // const url = './controller/auth/sign-in.php';
+                const url = 'https://eyedetection-6aad0-default-rtdb.asia-southeast1.firebasedatabase.app/';
                 const btn_login = document.getElementById('btn_signin');
+
+                const username = formData.get('username');
+                const password = formData.get('password');
                 
                 btn_login.disabled = true;
                 alertify.set('notifier','position', 'top-left');
                 
                 // log in
                 LOGIN(url, formData)
+                .then(response => response.json())
                 .then(response => {
-                    if(response.success){
-                        btn_login.disabled = false;
-                        // clear input
-                        Array.from(document.querySelectorAll('.form-control'), item => {
-                            item.value = "";
-                        })
-                        
-                        alertify.success(response.success);
-                        btn_login.textContent = "Redirecting..."
-                        // redirecting
-                        setTimeout(function(){
-                            btn_login.textContent = "Sign in";
-                            window.location.href = response.rl;
-                        }, 2000);
+                    if(response == null){
+                        throw new Error("Wrong Username");
                     }
 
-                    if(response.error){
-                        throw new Error(response.error)
+                    if(formData.get('password') != response.password){
+                        throw new Error("Wrong Password");
                     }
+                    
+                    alertify.success("Successfully Log In");
+                    btn_login.textContent = "Redirecting..."
+                    btn_login.disabled = false;
+                    
+                    // set session variables
+                    <?php 
+                        PutSesssionArray([
+                            'HasLog' => 1,
+                        ]);
+                    ?>
+                    // redirecting
+                    setTimeout(function(){
+                        btn_login.textContent = "Sign in";
+                        window.location.href = './?rl=home';
+                    }, 2000);
                 })
                 .catch(error => {
                     console.error(error.message);
@@ -84,26 +93,24 @@
             // log in
             async function LOGIN(url, data){
                 try {
-                    const response = await fetch(url , {
-                    method: 'POST',
-                    body: data
-                });
 
-                if(!response.ok){
-                    throw new Error("Server Error");
-                }
+                    const username = sanitize(data.get('username'));
+                    const response = await fetch(`${url}users/${username}/.json`);
 
-                const responseType = response.headers.get("Content-Type");
+                    if(!response.ok){
+                        throw new Error("Server Error");
+                    }
 
-                if(responseType && responseType.includes("application/json")){
-                    return await response.json();
-                }else{
-                    throw new Error(await response.text());
-                }
+                    return await response;
                 } catch (error) {
                     throw error;
                 }
             }
         });
+
+        // username sanitizer 
+        function sanitize(username) {
+            return username.replace(/\./g, '_');
+        }
     </script>
 </section>
