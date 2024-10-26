@@ -60,7 +60,7 @@
             /**
              * Firebase Realtime Database URL
              */
-            const url = 'https://eyedetection-6aad0-default-rtdb.asia-southeast1.firebasedatabase.app/';
+            const url = 'https://eyedetectiontimer-default-rtdb.asia-southeast1.firebasedatabase.app/';
 
             /**
              * Disable the submit button and set alertify notifier position
@@ -98,7 +98,7 @@
                 headers: {
                     'Content-Type': 'application/json'  // Specify that the request body is JSON
                 },
-                body: JSON.stringify({ duration: data })  // Send the timer duration as JSON
+                body: JSON.stringify({ duration: parseInt(data) })  // Send the timer duration as JSON
             });
 
             // Check if the response is OK

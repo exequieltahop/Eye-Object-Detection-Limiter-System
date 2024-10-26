@@ -16,7 +16,6 @@
         try {
             if(empty($sessions)){
                 throw new Exception('Don\'t out empty array for session making! ', 1);
-                
             }
             foreach($sessions as $key => $val){
                 $_SESSION[$key] = $val;

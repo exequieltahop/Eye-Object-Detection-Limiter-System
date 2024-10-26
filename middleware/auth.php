@@ -9,7 +9,7 @@
         header('Location: ./?rl=unauthorized');
         exit;
     }
-    // if(!SessionHas('uid')){
-    //     header('Location: ./?rl=unauthorized');
-    //     exit;
-    // }
+    if(!SessionHas('uid')){
+        header('Location: ./?rl=unauthorized');
+        exit;
+    }

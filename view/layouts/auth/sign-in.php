@@ -45,7 +45,7 @@
 
                 const formData = new FormData(e.target);
                 // const url = './controller/auth/sign-in.php';
-                const url = 'https://eyedetection-6aad0-default-rtdb.asia-southeast1.firebasedatabase.app/';
+                const url = 'https://eyedetectiontimer-default-rtdb.asia-southeast1.firebasedatabase.app/';
                 const btn_login = document.getElementById('btn_signin');
 
                 const username = formData.get('username');
@@ -69,18 +69,32 @@
                     alertify.success("Successfully Log In");
                     btn_login.textContent = "Redirecting..."
                     btn_login.disabled = false;
-                    
-                    // set session variables
-                    <?php 
-                        PutSesssionArray([
-                            'HasLog' => 1,
-                        ]);
-                    ?>
-                    // redirecting
-                    setTimeout(function(){
-                        btn_login.textContent = "Sign in";
-                        window.location.href = './?rl=home';
-                    }, 2000);
+                                        
+                    // set auth session variables
+                    set_auth_session_variables(username)
+                    .then(response => 
+                    {
+                        if(response.status)
+                        {
+                            // redirecting
+                            setTimeout(function(){
+                                btn_login.textContent = "Sign in";
+                                window.location.href = './?rl=home';
+                            }, 2000);
+                        }
+                        else if(response.error)
+                        {
+                            throw new Error(response.error);
+                        }
+                        else{
+                            throw new Error("Can't Login");
+                        }
+                    })
+                    .catch(error=>
+                    {   
+                        // rethrow error
+                        throw error;
+                    });
                 })
                 .catch(error => {
                     console.error(error.message);
@@ -111,6 +125,44 @@
         // username sanitizer 
         function sanitize(username) {
             return username.replace(/\./g, '_');
+        }
+
+        // set auth sessions variable
+        async function set_auth_session_variables(username)
+        {
+            // url
+            const url = './controller/auth/set-auth-session-variables.php';
+
+            // data
+            const data = JSON.stringify({
+                username : username
+            });
+
+            //fetch api
+            const response = await fetch(`${url}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type':'application/json'
+                },
+                body: data
+            })
+
+            // check if response was success or not 
+            if(!response.ok)
+            {
+                throw new Error("Can\'t Connect To The Server!");
+            }
+
+            //get content type
+            const responseContentType = response.headers.get('Content-Type');
+
+            // validate content-type response and return the object
+            if(responseContentType && responseContentType.includes('application/json'))
+            {
+                return await response.json();
+            }else{
+                throw new Error(await response.text());
+            }
         }
     </script>
 </section>
